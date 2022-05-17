@@ -1,0 +1,43 @@
+[develop]
+11.111.111.111 ansible_ssh_user=admin ansible_ssh_port=22
+
+[develop:vars]
+project_base_dir="/home/admin"
+project_dir="/home/admin/djangoapp"
+project_venv_dir="/home/admin/venv"
+branch=develop
+server=api-dev.web3vn.net
+user=admin
+
+[staging]
+11.111.111.112 ansible_ssh_user=admin ansible_ssh_port=22
+
+[staging:vars]
+project_base_dir="/home/admin"
+project_dir="/home/admin/djangoapp"
+project_venv_dir="/home/admin/venv"
+branch=staging
+server=api-stg.web3vn.net
+user=admin
+
+[production]
+11.111.111.1133 ansible_ssh_user=admin ansible_ssh_port=22
+
+[production:vars]
+project_base_dir="/home/admin"
+project_dir="/home/admin/djangoapp"
+project_venv_dir="/home/admin/venv"
+branch=release
+server=api.web3vn.net
+user=admin
+
+[production2]
+11.111.111.114 ansible_ssh_user=admin ansible_ssh_port=22
+
+[production2:vars]
+project_base_dir="/home/admin"
+project_dir="/home/admin/djangoapp"
+project_venv_dir="/home/admin/venv"
+branch=develop
+server=api.web3vn.net [elb2] 
+user=admin

@@ -1,0 +1,139 @@
+---
+
+- name: Create needed folders
+  file: >
+    path="{{ project_base_dir }}/{{ item }}"
+    state=directory
+      owner="{{ user }}"
+  with_items:
+    - conf/composed
+    - dbdata
+    - log/docker
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: Install needed packages
+  apt: >
+    name={{ item }}
+    state=latest
+    update_cache=yes
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg2
+    - software-properties-common
+    - rsyslog
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: Add Dockers official GPG key
+  apt_key:
+    id: 0EBFCD88
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: Add Docker repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+    state: present
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: Install Docker-CE and setuptools
+  apt: >
+    name={{ item }}
+    state=latest
+    update_cache=yes
+  with_items:
+    - docker-ce
+    - python3-setuptools
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: Download Docker Compose
+  get_url:
+    url: https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: 0755
+    group: staff
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: install pip
+  easy_install:
+    name: pip
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: remove fucking enum34
+  apt:
+    name: python-enum34
+    state: absent
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: pip install docker module version 3.1.4
+  pip:
+    name: docker
+    version: '3.1.4'
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: pip install docker-compose module version 1.15.0
+  pip:
+    name: docker-compose
+    version: '1.15.0'
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: create systemd for docker
+  file:
+    path: /etc/systemd/system/docker.service.d/
+    state: directory
+    recurse: yes
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: modify exec start for docker daemon
+  copy:
+    src: "{{ role_path }}/files/systemd-docker.conf"
+    dest: /etc/systemd/system/docker.service.d/docker.conf
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: reload systemd
+  systemd: daemon_reload=yes
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: create rsyslog configuration
+  template:
+    src: rsyslog.j2
+    dest: /etc/rsyslog.d/01-docker.conf
+  become: yes
+  become_user: root
+  tags: docker_debian
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+  become: yes
+  become_user: root
+  tags: docker_debian

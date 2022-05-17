@@ -1,0 +1,94 @@
+---
+
+- name: Check process-exporter
+  stat: path=/usr/local/bin/process-exporter
+  register: bin_process_exporter
+  tags: process-exporter
+
+- name: Download and unpack process-exporter
+  unarchive: >
+    src=https://github.com/ncabatoff/process-exporter/releases/download/v0.4.0/process-exporter-0.4.0.linux-amd64.tar.gz
+    dest=/tmp
+    copy=no
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+
+- name: Create group process-exporter
+  group:
+    name: process-exporter
+    state: present
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+
+- name: Add the user process-exporter
+  user:
+    name: process-exporter
+    group: process-exporter
+    create_home: no
+    shell: /bin/false
+    state: present
+    system: no
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+
+- name: Copy process-exporter bin
+  copy: >
+    remote_src=yes
+    src=/tmp/process-exporter-0.4.0.linux-amd64/process-exporter
+    dest=/usr/local/bin/process-exporter
+    owner=process-exporter
+    group=process-exporter
+    mode=0755
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+
+- name: Create /etc/process-exporter
+  file: >
+    path=/etc/process-exporter
+    state=directory
+    owner=process-exporter
+    group=process-exporter
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+
+- name: Add config for  process-exporter
+  template: >
+    src=config.yml.j2
+    dest=/etc/process-exporter/config.yml
+    owner=process-exporter
+    group=process-exporter
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+
+- name: Add process-exporter.service to systemd 
+  template: >
+    src=process-exporter.service.j2
+    dest=/etc/systemd/system/process-exporter.service
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+
+- name: Enable service in systemd
+  systemd:
+    name: process-exporter
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  become: yes
+  become_user: root
+  when: not bin_process_exporter.stat.exists
+  tags: process-exporter
+

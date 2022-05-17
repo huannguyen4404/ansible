@@ -1,0 +1,30 @@
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node-exporter
+Group=node-exporter
+Type=simple
+ExecStart=/usr/local/bin/node-exporter --no-collector.zfs \
+                                       --no-collector.xfs \
+                                       --no-collector.wifi \
+                                       --no-collector.timex \
+                                       --no-collector.textfile \
+                                       --no-collector.sockstat \
+                                       --no-collector.nfsd \
+                                       --no-collector.nfs \
+                                       --no-collector.mdadm \
+                                       --no-collector.infiniband \
+                                       --no-collector.hwmon \
+                                       --no-collector.entropy \
+                                       --no-collector.edac \
+                                       --no-collector.bonding \
+                                       --no-collector.bcache \
+                                       --collector.systemd \
+                                       --collector.supervisord \
+                                       --collector.supervisord.url=http://localhost:9010/RPC2
+
+[Install]
+WantedBy=multi-user.target

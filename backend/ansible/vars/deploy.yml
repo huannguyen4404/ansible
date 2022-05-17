@@ -1,0 +1,78 @@
+---
+
+project:
+  repo_url: git@gitlab.com:web3vn/pikachu-be.git
+  name:     web3vn
+  database: web3vn
+  settings: "config.settings"
+
+#Variables for python version
+Python:
+  ver: 3.7.2 
+  apt_ver:  3
+
+venv:
+  python:
+    ver: 3.7 
+
+#Variables for postgres version
+postgres:
+  ver: 10         # SETVERSION OF POSTGRES (FOR EXAMPLE 9.4, 9.5)
+
+slack_notify:
+  url:      "T0525LDA6/B0158SV61LL/FS0VHNdtQDW5IyMERDEncYcg"
+  channel:  "#{{ project.name }}_ops"
+
+certbot_email: "ops@web3vn.net"
+
+nginx:
+  domain: "{{ server }}"
+  access_log: "{{project_base_dir}}/log/nginx-access.log" 
+  error_log: "{{project_base_dir}}/log/nginx-error.log"
+  static_root: "{{project_base_dir}}/public"
+
+supervisor:
+  celery_command: "worker -A mwyf.taskapp -l INFO"                               #CHANGE THIS!!!
+  celerybeat_command: "beat -A mwyf.taskapp -l INFO"                             #CHANGE THIS!!!
+  celery_flower_command: "flower -A peacetime.apps.taskapp.celery"               #CHANGE THIS!!!
+  websocket_command: "manage.py websocket_server --host 127.0.0.1 --port 9001"   #CHANGE THIS!!!
+  log_dir: "{{project_base_dir}}/log"
+  celery: no
+  celerybeat: no
+  celery_flower: no
+  websocket: no
+ 
+
+
+###Install
+directory: no
+node_exporter: no
+process_exporter: no
+system: no
+python: no
+route53: no
+postgres_install: no
+mysql_install: no
+postgis: no
+redis_install: no
+rabbitmq_install: no 
+memcached: no
+nodejs: no
+bower: no 
+certbot: no
+supervisor_install: no
+nginx_install: no
+virtualenv: no
+docker_install: no
+filebeat: no
+
+###Deploy
+git: yes
+pip: yes
+backup_clean: yes
+db: yes
+migrate: yes
+collectstatic: yes
+supervizorctl: yes
+docker_compose_up: no
+slack: yes

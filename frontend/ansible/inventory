@@ -1,0 +1,11 @@
+[develop]
+11.111.111.121 ansible_ssh_user=admin ansible_ssh_port=22
+
+[staging]
+11.111.111.122 ansible_ssh_user=admin ansible_ssh_port=22
+
+[production]
+11.111.111.123 ansible_ssh_user=admin ansible_ssh_port=22
+
+[production2]
+11.111.111.124 ansible_ssh_user=admin ansible_ssh_port=22

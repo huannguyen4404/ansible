@@ -1,0 +1,9 @@
+---
+
+- name: Jessie
+  include: debian_jessie.yml
+  when: "ansible_distribution_release == 'jessie'"
+
+- name: Stretch
+  include: debian_stretch.yml
+  when: "ansible_distribution_release == 'stretch'"

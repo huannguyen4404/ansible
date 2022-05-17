@@ -1,0 +1,34 @@
+---
+
+- name: Debian
+  include: debian.yml
+  when: "ansible_distribution == 'Debian'"
+
+- name: Ubuntu
+  include: ubuntu.yml
+  when: "ansible_distribution == 'Ubuntu'"
+
+- name: create /etc/docker/daemon.json
+  copy:
+    src: "{{ role_path }}/files/docker-daemon.json"
+    dest: /etc/docker/daemon.json
+  become: yes
+  become_user: root
+  tags: docker_install
+
+- name: set global variable DOCKER_HOST
+  lineinfile:
+    path: /etc/profile
+    line: "export DOCKER_HOST=tcp://127.0.0.1:2375"
+    state: present
+  become: yes
+  become_user: root
+  tags: docker_install
+
+- name: restart Docker
+  service:
+    name: docker
+    state: restarted
+  become: yes
+  become_user: root
+  tags: docker_install

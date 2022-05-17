@@ -1,0 +1,137 @@
+---
+
+- name: Install filebeat deb
+  apt:
+    deb: https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.4.2-amd64.deb
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Create directory for keys
+  file:
+    path: /etc/filebeat/ssl_keys/
+    state: directory
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Copy client crt
+  copy:
+    src: client.crt
+    dest: /etc/filebeat/ssl_keys/client.crt
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Copy CA crt
+  copy:
+    src: ca.crt
+    dest: /etc/filebeat/ssl_keys/ca.crt
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Copy client key
+  copy:
+    src: client.key
+    dest: /etc/filebeat/ssl_keys/client.key
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Create config
+  template:
+    src: filebeat.j2
+    dest: /etc/filebeat/filebeat.yml
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Start filebeat
+  service:
+    name: filebeat
+    state: restarted
+    enabled: yes
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Fix for bash history (remove HISTTIMEFORMAT)
+  lineinfile:
+    path: /root/.profile
+    regexp: "HISTTIMEFORMAT="
+    state: absent
+  tags: filebeat
+
+- name: Fix for bash history (remove shopt -s histappend)
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "shopt -s histappend"
+    state: absent
+  tags: filebeat
+
+- name: Fix for bash history (remove PROMPT_COMMAND)
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "PROMPT_COMMAND="
+    state: absent
+  tags: filebeat
+
+- name: Fix for bash history (add PROMPT_COMMAND)
+  lineinfile:
+    path: ~/.bashrc
+    line: "PROMPT_COMMAND=\"history -a;$PROMPT_COMMAND\""
+    state: present
+  tags: filebeat
+
+- name: Fix for bash history (add shopt -s histappend)
+  lineinfile:
+    path: ~/.bashrc
+    line: "shopt -s histappend"
+    state: present
+  tags: filebeat
+
+- name: Fix for bash history (remove for root HISTTIMEFORMAT)
+  lineinfile:
+    path: /root/.profile
+    regexp: "HISTTIMEFORMAT="
+    state: absent
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Fix for bash history (remove for root shopt -s histappend)
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "shopt -s histappend"
+    state: absent
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Fix for bash history (remove for root PROMPT_COMMAND)
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "PROMPT_COMMAND="
+    state: absent
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Fix for bash history (add for root PROMPT_COMMAND)
+  lineinfile:
+    path: ~/.bashrc
+    line: "PROMPT_COMMAND=\"history -a;$PROMPT_COMMAND\""
+    state: present
+  become: yes
+  become_user: root
+  tags: filebeat
+
+- name: Fix for bash history (add for root shopt -s histappend)
+  lineinfile:
+    path: ~/.bashrc
+    line: "shopt -s histappend"
+    state: present
+  become: yes
+  become_user: root
+  tags: filebeat

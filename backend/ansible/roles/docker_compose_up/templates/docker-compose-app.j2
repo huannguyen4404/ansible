@@ -1,0 +1,18 @@
+# /etc/systemd/system/docker-compose-app.service
+
+[Unit]
+Description=Docker Compose Application Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory="{{ project_dir }}"
+Environment=DOCKER_HOST=127.0.0.1:2375
+ExecStart=/usr/local/bin/docker-compose -f {{ project_dir }}/develop.yml up -d
+ExecStop=/usr/local/bin/docker-compose -f {{ project_dir }}/develop.yml down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

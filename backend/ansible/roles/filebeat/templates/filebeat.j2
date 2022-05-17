@@ -1,0 +1,54 @@
+filebeat.inputs:
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/*.log
+    - /var/log/messages
+  exclude_files: ['\.gz$']
+  tail_files: true
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/*
+    - /home/admin/log/nginx*
+    - /home/admin/log/docker/nginx*
+  exclude_files: ['\.gz$']
+  tags: ["nginx"]
+  tail_files: true
+
+- type: log
+  enabled: true
+  paths:
+    - /home/admin/log/*.log
+  exclude_files: ['nginx*', '\.gz$']
+  tail_files: true
+
+- type: log
+  enabled: true
+  paths:
+    - /home/admin/log/docker/*.log
+  exclude_files: ['nginx*', '\.gz$']
+  tags: ["docker"]
+  tail_files: true
+
+- type: log
+  enabled: true
+  paths:
+    - /root/.bash_history
+    - /home/admin/.bash_history
+  exclude_files: ['\.gz$']
+  tags: ["bash_history"]
+  tail_files: true
+
+output.logstash:
+  hosts: ["log.steel.kiwi:5044"]
+  ssl.certificate_authorities: ["/etc/filebeat/ssl_keys/ca.crt"]
+  ssl.certificate: "/etc/filebeat/ssl_keys/client.crt"
+  ssl.key: "/etc/filebeat/ssl_keys/client.key"
+  ssl.supported_protocols: "TLSv1.2"
+
+# For AWS Elasticsearch
+output.elasticsearch:
+  hosts: ["https://my-public-test-domain.ap-southeast-1.es.amazonaws.com:443"]

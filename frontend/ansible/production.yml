@@ -1,0 +1,57 @@
+---
+
+- hosts: production
+  gather_facts: no
+  vars:
+    project:
+      name:           web3vn
+      user:           admin
+      repo_url:       git@gitlab.com:web3vn/pikachu-front.git
+      branch:         release
+      base_dir:       "/home/admin"
+      dir:            "/home/admin/nodeapp"
+    slack_notify:
+      url:      "T0525LDA6/B0158SV61LL/FS0VHNdtQDW5IyMERDEncYcg"
+      channel:  "#web3vn_ops"
+  tasks:
+
+  - name: get updater name
+    local_action: command git config user.name
+    register: updater
+    tags: notify
+
+  - name: clone/update repository
+    git: >
+      repo="{{ project.repo_url }}"
+      dest="{{ project.dir }}"
+      accept_hostkey=yes
+      version="{{ project.branch }}"
+      force=yes
+    become: no
+    tags: git
+
+  # - name: npm install
+  #   npm:
+  #     path: "{{ project.dir }}"
+  #   tags: npm
+
+  - name: npm build
+    shell: "npm run build"
+    args:
+      chdir: "{{ project.dir }}"
+
+  - name: restart all supervisor tasks
+    supervisorctl: >
+      name="{{ project.name }}:"
+      state=restarted
+    tags: supervisorctl
+
+  - name: send notification via Slack
+    local_action:
+      module: slack
+      token: "{{ slack_notify.url }}"
+      channel: "{{ slack_notify.channel }}"
+      msg: " :tada: *www.web3vn.net* has been updated with `{{ project.branch }}` by *{{ updater.stdout }}*"
+      parse: "full"
+      link_names: 1
+    tags: notify

@@ -1,0 +1,15 @@
+---
+
+- name: add gitlab ssh key
+  copy: >
+    src=~/.ssh/id_rsa.web3vn_deployment
+    dest=~/.ssh/id_rsa_deloyment
+    owner=admin
+    mode=0600
+
+- name: configure ssh to use ansible key for gitlab.com
+  template: >
+    src="{{ role_path }}/../git_ssh/templates/ssh_config.j2"
+    dest=~/.ssh/config
+    owner=admin
+    mode=0644

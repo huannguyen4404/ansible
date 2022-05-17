@@ -1,0 +1,72 @@
+---
+
+- name: Check node-exporter
+  stat: path=/usr/local/bin/node-exporter
+  register: bin_exporter
+  tags: node-exporter
+
+- name: Download and unpack node-exporter
+  unarchive: >
+    src=https://github.com/prometheus/node_exporter/releases/download/v0.17.0-rc.0/node_exporter-0.17.0-rc.0.linux-amd64.tar.gz
+    dest=/tmp
+    copy=no
+  become: yes
+  become_user: root
+  when: not bin_exporter.stat.exists
+  tags: node-exporter
+
+- name: Create group node-exporter
+  group:
+    name: node-exporter
+    state: present
+  become: yes
+  become_user: root
+  when: not bin_exporter.stat.exists
+  tags: node-exporter
+
+- name: Add the user node-exporter
+  user:
+    name: node-exporter
+    group: node-exporter
+    create_home: no
+    shell: /bin/false
+    state: present
+    system: no
+  become: yes
+  become_user: root
+  when: not bin_exporter.stat.exists
+  tags: node-exporter
+
+- name: Copy node-exporter bin
+  copy: >
+    remote_src=yes
+    src=/tmp/node_exporter-0.17.0-rc.0.linux-amd64/node_exporter
+    dest=/usr/local/bin/node-exporter
+    owner=node-exporter
+    group=node-exporter
+    mode=0755
+  become: yes
+  become_user: root
+  when: not bin_exporter.stat.exists
+  tags: node-exporter
+
+- name: Add node-exporter.service to systemd 
+  template: >
+    src=node-exporter.service.j2
+    dest=/etc/systemd/system/node-exporter.service
+  become: yes
+  become_user: root
+  when: not bin_exporter.stat.exists
+  tags: node-exporter
+
+- name: Enable service in systemd
+  systemd:
+    name: node-exporter
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  become: yes
+  become_user: root
+  when: not bin_exporter.stat.exists
+  tags: node-exporter
+

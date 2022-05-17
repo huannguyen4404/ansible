@@ -1,0 +1,36 @@
+- name: Install certbot
+  apt: >
+    name={{ item }}
+    state=latest
+    default_release=jessie-backports
+    update_cache=yes
+  with_items:
+    - certbot
+  become: yes
+  become_user: root
+  tags: certbot_debian
+
+- name: Request signed certificate
+  shell: "certbot certonly --webroot -w /usr/share/nginx/html/ --non-interactive  --agree-tos --email {{ certbot_email }} -d {{ server }}"
+  become: yes
+  become_user: root 
+  tags: certbot_debian
+
+- name: Add job in cron for certbot 
+  cron:
+    name: "renew certificates"
+    minute: "0"
+    hour: "*/12"
+    job: "/usr/bin/env certbot  renew -q --post-hook \"/usr/bin/env nginx -s reload\""
+    state: present
+  become: yes
+  become_user: root
+  tags: certbot_cron
+
+- name: remove default cron task
+  file: >
+    path=/etc/cron.d/certbot
+    state=absent
+  become: yes
+  become_user: root
+  tags: certbot_cron

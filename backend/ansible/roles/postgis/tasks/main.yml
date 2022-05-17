@@ -1,0 +1,9 @@
+---
+
+- name: Debian
+  include: debian.yml 
+  when: "ansible_distribution == 'Debian'"
+
+- name: Ubuntu
+  include: ubuntu.yml 
+  when: "ansible_distribution == 'Ubuntu'"

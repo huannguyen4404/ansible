@@ -1,0 +1,61 @@
+---
+
+- name: Stop nginx
+  service:
+    name: nginx
+    state: stopped
+  become: yes
+  become_user: root
+  tags: docker_compose_up
+
+- name: Deregister nginx from init scripts
+  systemd:
+    name: nginx
+    enabled: no
+  become: yes
+  become_user: root
+  tags: docker_compose_up
+
+- name: create backup
+  shell: docker-compose -f {{ project_dir }}/develop.yml exec -u postgres -T db pg_dumpall -c | gzip > {{project_base_dir}}/backup/db/$(date +%Y-%m-%d-%H%M%S).sql.gz
+  environment:
+    DOCKER_HOST: 127.0.0.1:2375
+  tags: docker_compose_up
+
+- name: Generate nginx config for docker compose
+  template: 
+    src="{{ role_path }}/../nginx_install/templates/nginx_site.j2"
+    dest="{{ project_base_dir }}/conf/composed/nginx.conf"
+    owner="{{ user }}"
+  tags: docker_compose_up
+
+- name: Docker Compose up containers
+  docker_service:
+    project_src: "{{ project_dir }}"
+    files: develop.yml
+    docker_host: tcp://127.0.0.1:2375
+    state: present
+  tags: docker_compose_up
+
+- name: Recreate app image
+  shell: docker-compose -f {{ project_dir }}/develop.yml up -d --build --no-deps app
+  environment:
+    DOCKER_HOST: 127.0.0.1:2375
+  tags: docker_compose_up
+
+- name: generate systemd config
+  template:
+    src: docker-compose-app.j2
+    dest: /etc/systemd/system/docker-compose-app.service
+  become: yes
+  become_user: root
+  tags: docker_compose_up
+
+- name: enable docker-compose-app in systemd
+  systemd:
+    name: docker-compose-app
+    enabled: yes
+    daemon_reload: yes
+  become: yes
+  become_user: root
+  tags: docker_compose_up
